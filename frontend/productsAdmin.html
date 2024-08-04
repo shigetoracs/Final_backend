@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrar Productos</title>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Administrar Productos</h1>
+    <button onclick="location.href='/admin'">Administrar Usuarios</button>
+
+    <h2>Agregar/Editar Producto</h2>
+    <form id="productForm">
+        <input type="hidden" id="productId">
+        <label for="title">Título:</label>
+        <input type="text" id="title" required><br>
+        <label for="description">Descripción:</label>
+        <input type="text" id="description" required><br>
+        <label for="stock">Stock:</label>
+        <input type="number" id="stock" required><br>
+        <label for="category">Categoría:</label>
+        <input type="text" id="category" required><br>
+        <label for="status">Estado:</label>
+        <select id="status">
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
+        </select><br>
+        <label for="code">Código:</label>
+        <input type="text" id="code" required><br>
+        <label for="price">Precio:</label>
+        <input type="number" id="price" required><br>
+        <button type="submit">Guardar Producto</button>
+    </form>
+
+    <h2>Lista de Productos</h2>
+    <table id="productsTable">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Descripción</th>
+                <th>Stock</th>
+                <th>Categoría</th>
+                <th>Estado</th>
+                <th>Código</th>
+                <th>Precio</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        async function fetchProducts() {
+            const response = await fetch('/api/products');
+            const products = await response.json();
+            const tbody = document.querySelector('#productsTable tbody');
+            tbody.innerHTML = '';
+
+            products.docs.forEach(product => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${product.title}</td>
+                    <td>${product.description}</td>
+                    <td>${product.stock}</td>
+                    <td>${product.category}</td>
+                    <td>${product.status ? 'Activo' : 'Inactivo'}</td>
+                    <td>${product.code}</td>
+                    <td>${product.price}</td>
+                    <td>
+                        <button onclick="editProduct('${product._id}')">Editar</button>
+                        <button onclick="deleteProduct('${product._id}')">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function deleteProduct(productId) {
+            const response = await fetch(`/api/products/${productId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                fetchProducts();
+            } else {
+                alert('Error al eliminar el producto');
+            }
+        }
+
+        async function editProduct(productId) {
+            const response = await fetch(`/api/products/${productId}`);
+            const product = await response.json();
+
+            document.getElementById('productId').value = product._id;
+            document.getElementById('title').value = product.title;
+            document.getElementById('description').value = product.description;
+            document.getElementById('stock').value = product.stock;
+            document.getElementById('category').value = product.category;
+            document.getElementById('status').value = product.status;
+            document.getElementById('code').value = product.code;
+            document.getElementById('price').value = product.price;
+        }
+
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const productId = document.getElementById('productId').value;
+            const product = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                stock: document.getElementById('stock').value,
+                category: document.getElementById('category').value,
+                status: document.getElementById('status').value === 'true',
+                code: document.getElementById('code').value,
+                price: document.getElementById('price').value
+            };
+
+            let response;
+            if (productId) {
+                response = await fetch(`/api/products/${productId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(product)
+                });
+            } else {
+                response = await fetch('/api/products/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(product)
+                });
+            }
+
+            if (response.ok) {
+                fetchProducts();
+                document.getElementById('productForm').reset();
+            } else {
+                alert('Error al guardar el producto');
+            }
+        });
+
+        fetchProducts();
+    </script>
+</body>
+
+</html>
