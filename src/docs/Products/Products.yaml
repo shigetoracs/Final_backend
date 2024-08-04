@@ -1,0 +1,194 @@
+openapi: 3.0.0
+info:
+  title: API de Productos
+  description: Documentación del módulo de productos
+  version: 1.0.0
+paths:
+  /api/products:
+    get:
+      summary: Obtener todos los productos
+      tags:
+        - Productos
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Número de productos a obtener
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Página de resultados
+        - in: query
+          name: filter
+          schema:
+            type: string
+          description: Filtrar productos por categoría o estado
+        - in: query
+          name: ord
+          schema:
+            type: string
+            enum: [asc, desc]
+          description: Ordenar productos por precio
+      responses:
+        "200":
+          description: Productos obtenidos correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  docs:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Product"
+                  totalDocs:
+                    type: integer
+                  limit:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  page:
+                    type: integer
+                  pagingCounter:
+                    type: integer
+                  hasPrevPage:
+                    type: boolean
+                  hasNextPage:
+                    type: boolean
+                  prevPage:
+                    type: integer
+                  nextPage:
+                    type: integer
+        "500":
+          description: Error al obtener productos
+    post:
+      summary: Crear un producto
+      tags:
+        - Productos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+      responses:
+        "201":
+          description: Producto creado correctamente
+        "403":
+          description: Usuario no autorizado
+        "500":
+          description: Error al crear producto
+  /api/products/{pid}:
+    get:
+      summary: Obtener un producto
+      tags:
+        - Productos
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto a obtener
+      responses:
+        "200":
+          description: Producto obtenido correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Producto no encontrado
+        "500":
+          description: Error al obtener producto
+    put:
+      summary: Actualizar un producto
+      tags:
+        - Productos
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto a actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Product"
+      responses:
+        "200":
+          description: Producto actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "403":
+          description: Usuario no autorizado
+        "500":
+          description: Error al actualizar producto
+    delete:
+      summary: Eliminar un producto
+      tags:
+        - Productos
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto a eliminar
+      responses:
+        "200":
+          description: Producto eliminado correctamente
+        "403":
+          description: Usuario no autorizado
+        "500":
+          description: Error al eliminar producto
+
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID autogenerado por MongoDB
+        title:
+          type: string
+          description: Título del producto
+        description:
+          type: string
+          description: Descripción del producto
+        stock:
+          type: integer
+          description: Stock del producto
+        category:
+          type: string
+          description: Categoría del producto
+        status:
+          type: boolean
+          description: Estado del producto
+        code:
+          type: string
+          description: Código único del producto
+        price:
+          type: number
+          description: Precio del producto
+        thumbnail:
+          type: array
+          items:
+            type: string
+          description: Miniaturas del producto
+      required:
+        - title
+        - description
+        - stock
+        - category
+        - price

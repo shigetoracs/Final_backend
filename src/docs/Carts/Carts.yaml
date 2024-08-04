@@ -1,0 +1,154 @@
+openapi: 3.0.0
+info:
+  title: API de Carrito
+  description: Documentación del módulo de carrito
+  version: 1.0.0
+paths:
+  /api/cart:
+    post:
+      summary: Crear un carrito
+      tags:
+        - Carrito
+      responses:
+        "201":
+          description: Carrito creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "500":
+          description: Error al crear carrito
+
+  /api/cart/{cid}:
+    get:
+      summary: Obtener un carrito
+      tags:
+        - Carrito
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito a obtener
+      responses:
+        "200":
+          description: Carrito obtenido correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "404":
+          description: Carrito no encontrado
+        "500":
+          description: Error al obtener carrito
+
+  /api/cart/{cid}/{pid}:
+    post:
+      summary: Insertar o actualizar un producto en el carrito
+      tags:
+        - Carrito
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto a insertar o actualizar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                  description: Cantidad del producto a insertar o actualizar
+      responses:
+        "200":
+          description: Producto insertado o actualizado correctamente en el carrito
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "403":
+          description: Usuario no autorizado
+        "500":
+          description: Error al insertar o actualizar producto en el carrito
+
+  /api/cart/purchase/{cid}:
+    get:
+      summary: Crear un ticket de compra desde el carrito
+      tags:
+        - Carrito
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+      responses:
+        "200":
+          description: Ticket de compra creado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: Carrito no encontrado
+        "500":
+          description: Error al crear ticket de compra
+
+components:
+  schemas:
+    Cart:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID del carrito
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              id_prod:
+                type: string
+                description: ID del producto
+              quantity:
+                type: integer
+                description: Cantidad del producto en el carrito
+    Ticket:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID del ticket de compra
+        code:
+          type: string
+          description: Código único del ticket
+        purchaser:
+          type: string
+          description: Comprador del ticket
+        amount:
+          type: number
+          description: Monto total del ticket
+        products:
+          type: array
+          items:
+            type: object
+            properties:
+              id_prod:
+                type: string
+                description: ID del producto
+              quantity:
+                type: integer
+                description: Cantidad del producto en el ticket
