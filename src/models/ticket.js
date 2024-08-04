@@ -1,4 +1,3 @@
-// ticket.js
 import { Schema, model } from "mongoose";
 import crypto from "crypto";
 
